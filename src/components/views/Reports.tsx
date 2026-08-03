@@ -255,7 +255,19 @@ function buildCsv(summary: ReturnType<typeof computeWeeklySummary>): string {
   rows.push([]);
   rows.push(['Total', '', '', '', '', '', String(summary.totalMinutes), '', summary.totalEarnings.toFixed(2)]);
 
-  return rows
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    .join('\n');
+  return rows.map((row) => row.map(csvCell).join(',')).join('\n');
+}
+
+/**
+ * Encodes one CSV cell. Text that starts with a formula character is prefixed with a
+ * single quote so spreadsheet software treats it as text instead of executing it when
+ * the exported file is opened by the freelancer, their client, or their accountant.
+ */
+function csvCell(value: string): string {
+  let text = String(value);
+  const isPlainNumber = /^-?\d+(\.\d+)?$/.test(text);
+  if (!isPlainNumber && /^[=+\-@\t\r]/.test(text)) {
+    text = `'${text}`;
+  }
+  return `"${text.replace(/"/g, '""')}"`;
 }

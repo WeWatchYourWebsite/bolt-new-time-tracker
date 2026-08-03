@@ -2,12 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { NewProject, Project, ProjectWithClient } from '@/types/database';
 
-export function useProjects() {
+export function useProjects(userId: string | null) {
   const [projects, setProjects] = useState<ProjectWithClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProjects = useCallback(async () => {
+    if (!userId) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     const { data, error: fetchError } = await supabase
@@ -15,14 +20,18 @@ export function useProjects() {
       .select('*, client:clients(id, name, company, hourly_rate)')
       .order('created_at', { ascending: false });
     if (fetchError) {
-      setError(fetchError.message);
+      console.error('Failed to load projects', fetchError);
+      setError('We could not load your projects. Please try again.');
     } else {
       setProjects((data ?? []) as unknown as ProjectWithClient[]);
     }
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
+    // Drop any data belonging to a previously signed-in account before loading.
+    setProjects([]);
+    setError(null);
     fetchProjects();
   }, [fetchProjects]);
 

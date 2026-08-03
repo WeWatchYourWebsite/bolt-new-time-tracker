@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import type { NewTimeEntry, ProjectWithClient, TimeEntryWithProject } from '@/types/database';
 import { toLocalDatetimeInput, fromLocalDatetimeInput } from '@/lib/dates';
+import { toUserMessage } from '@/lib/errors';
 
 interface TimeEntryFormProps {
   open: boolean;
@@ -89,7 +90,7 @@ export default function TimeEntryForm({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save entry.');
+      setError(toUserMessage(err, 'We could not save this time entry. Please check the details and try again.'));
     } finally {
       setSaving(false);
     }

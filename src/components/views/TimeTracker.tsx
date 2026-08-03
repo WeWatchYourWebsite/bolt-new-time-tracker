@@ -3,6 +3,7 @@ import { Play, Square, Plus, Clock, Pencil, Trash2, FolderPlus, Search } from 'l
 import type { NewTimeEntry, ProjectWithClient, TimeEntryWithProject } from '@/types/database';
 import { formatDuration, formatCurrency, formatDateTime, formatHourlyRate, calcEarnings } from '@/lib/format';
 import { isSameDay } from '@/lib/dates';
+import { toUserMessage } from '@/lib/errors';
 import Modal from '@/components/ui/Modal';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -75,7 +76,7 @@ export default function TimeTracker({
       });
       setTimerDesc('');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to start timer.');
+      alert(toUserMessage(err, 'We could not start the timer. Please try again.'));
     }
   };
 
@@ -84,7 +85,7 @@ export default function TimeTracker({
     try {
       await onStopEntry(runningEntry.id);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to stop timer.');
+      alert(toUserMessage(err, 'We could not stop the timer. Please try again.'));
     }
   };
 
@@ -316,7 +317,7 @@ export default function TimeTracker({
             await onDeleteEntry(confirmDelete.id);
             setConfirmDelete(null);
           } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to delete.');
+            alert(toUserMessage(err, 'We could not delete this time entry. Please try again.'));
           }
         }}
         onCancel={() => setConfirmDelete(null)}

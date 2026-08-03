@@ -2,12 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { NewTimeEntry, TimeEntry, TimeEntryWithProject } from '@/types/database';
 
-export function useTimeEntries() {
+export function useTimeEntries(userId: string | null) {
   const [entries, setEntries] = useState<TimeEntryWithProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEntries = useCallback(async () => {
+    if (!userId) {
+      setEntries([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     const { data, error: fetchError } = await supabase
@@ -15,14 +20,18 @@ export function useTimeEntries() {
       .select('*, project:projects(id, name, hourly_rate, client:clients(id, name, hourly_rate))')
       .order('start_time', { ascending: false });
     if (fetchError) {
-      setError(fetchError.message);
+      console.error('Failed to load time entries', fetchError);
+      setError('We could not load your time entries. Please try again.');
     } else {
       setEntries((data ?? []) as unknown as TimeEntryWithProject[]);
     }
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
+    // Drop any data belonging to a previously signed-in account before loading.
+    setEntries([]);
+    setError(null);
     fetchEntries();
   }, [fetchEntries]);
 

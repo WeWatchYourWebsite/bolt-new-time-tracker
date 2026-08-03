@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Users, Plus, Pencil, Trash2, Mail, Building2, Search } from 'lucide-react';
 import type { Client, NewClient } from '@/types/database';
 import { formatCurrency, formatDate, formatHourlyRate } from '@/lib/format';
+import { toUserMessage } from '@/lib/errors';
 import Modal from '@/components/ui/Modal';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -170,7 +171,7 @@ export default function Clients({ clients, onCreate, onUpdate, onDelete }: Clien
             await onDelete(confirmDelete.id);
             setConfirmDelete(null);
           } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to delete.');
+            alert(toUserMessage(err, 'We could not delete this client. Please try again.'));
           }
         }}
         onCancel={() => setConfirmDelete(null)}
@@ -234,7 +235,7 @@ function ClientForm({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save.');
+      setError(toUserMessage(err, 'We could not save this client. Please check the details and try again.'));
     } finally {
       setSaving(false);
     }

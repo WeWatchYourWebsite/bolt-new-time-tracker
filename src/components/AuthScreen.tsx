@@ -27,8 +27,9 @@ export default function AuthScreen() {
         if (signInError) throw signInError;
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
-      setError(humanizeAuthError(message));
+      const message = err instanceof Error ? err.message : '';
+      console.error('Authentication failed', err);
+      setError(humanizeAuthError(message, mode));
     } finally {
       setSubmitting(false);
     }
@@ -186,9 +187,18 @@ export default function AuthScreen() {
   );
 }
 
-function humanizeAuthError(message: string): string {
-  if (/invalid login credentials/i.test(message)) return 'Incorrect email or password.';
-  if (/user already registered/i.test(message)) return 'An account with this email already exists.';
-  if (/rate limit/i.test(message)) return 'Too many attempts. Please wait a moment and try again.';
-  return message;
+function humanizeAuthError(message: string, mode: Mode): string {
+  // Never surface the provider's raw message: it can distinguish an existing account
+  // from a non-existent one, and can carry internal configuration detail.
+  if (/rate limit|too many/i.test(message)) {
+    return 'Too many attempts. Please wait a moment and try again.';
+  }
+  if (/password/i.test(message) && /short|least|weak|characters/i.test(message)) {
+    return 'Please choose a longer, stronger password.';
+  }
+  if (mode === 'signup') {
+    // Deliberately identical whether or not the email is already registered.
+    return 'We could not create an account with those details. If you already have an account, sign in instead.';
+  }
+  return 'Incorrect email or password.';
 }

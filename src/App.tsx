@@ -24,13 +24,14 @@ function LoadingScreen() {
 }
 
 function AppContent() {
-  const { session, loading } = useAuth();
+  const { session, user, loading } = useAuth();
   const [view, setView] = useState<View>('dashboard');
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
 
-  const clientsHook = useClients();
-  const projectsHook = useProjects();
-  const entriesHook = useTimeEntries();
+  const userId = user?.id ?? null;
+  const clientsHook = useClients(userId);
+  const projectsHook = useProjects(userId);
+  const entriesHook = useTimeEntries(userId);
 
   if (loading) return <LoadingScreen />;
   if (!session) return <AuthScreen />;

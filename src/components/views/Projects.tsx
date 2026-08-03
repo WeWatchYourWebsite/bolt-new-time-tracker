@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FolderKanban, Plus, Pencil, Trash2, Archive, ArchiveRestore, Search, Clock } from 'lucide-react';
 import type { Client, NewProject, ProjectWithClient } from '@/types/database';
 import { formatHourlyRate, formatDuration } from '@/lib/format';
+import { toUserMessage } from '@/lib/errors';
 import Modal from '@/components/ui/Modal';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -237,7 +238,7 @@ export default function Projects({
             await onDelete(confirmDelete.id);
             setConfirmDelete(null);
           } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to delete.');
+            alert(toUserMessage(err, 'We could not delete this project. Please try again.'));
           }
         }}
         onCancel={() => setConfirmDelete(null)}
@@ -304,7 +305,7 @@ function ProjectForm({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save.');
+      setError(toUserMessage(err, 'We could not save this project. Please check the details and try again.'));
     } finally {
       setSaving(false);
     }
